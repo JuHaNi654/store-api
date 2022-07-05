@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:12
+    container_name: database
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    networks:
+      - default
+    environment: # FIXME some reason postgres container wont fetch values from .env file
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=app
+  store:
+    container_name: store-api
+    image: "store:1.0"
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "5000:5000"
+    expose:
+      - 5000
+    networks:
+      - default
+    env_file:
+      - .env
+    volumes:
+      - ./prisma:/usr/src/app/prisma
+      - ./src:/usr/src/app/src
+    command: /bin/sh -c "/usr/src/app/bin/dev.sh"
